@@ -8,7 +8,9 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
 			$(document).ready(function() {
-				var socket = io();
+				var socket = io("https://thechasebuzzer.not.codi.moe", {
+					transports: ["websocket"]
+				});
 				
 				socket.emit("refreshUserInfo");
 
