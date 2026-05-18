@@ -25,7 +25,7 @@ a, a:visited {
     min-height: 30px;
 }
 
-#firstBuzzHost {
+.firstBuzzHost {
     min-height: 30px;
     margin-top: 80px;
 }
