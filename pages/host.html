@@ -8,22 +8,28 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
 			$(document).ready(function() {
-				var socket = io("https://thechasebuzzer.not.codi.moe", {
+				var socket = io({
 					transports: ["websocket"]
 				});
-				
-				socket.emit("refreshUserInfo");
 
-				socket.on("userInfoToClient", (userInfo) => {
-					userInfoToClient(userInfo);
+				let isChargeModeEnabled = false; // bool to determine if charge mode currently on
+				socket.on("getChargeModeState", (isChargeMode) => {
+					isChargeModeEnabled = isChargeMode;
+					socket.emit("refreshUserInfo", isChargeModeEnabled);
+
+					$("#toggleChargeMode").text(`${isChargeModeEnabled ? "Disable" : "Enable"} Charge Mode`);
 				});
 
-				socket.on("gameStateToClient", (currentTeam, currentScore) => {
-					gameStateToClient(currentTeam, currentScore);
+				socket.on("userInfoToClient", (userInfo, isChargeMode, userChargeData) => {
+					userInfoToClient(userInfo, isChargeMode, userChargeData);
 				});
 
-				socket.on("clearBuzzers", (currentTeam) => {
-					clearBuzzers();
+				socket.on("gameStateToClient", (currentTeam, currentScore, isChargeMode, userChargeData) => {
+					gameStateToClient(currentTeam, currentScore, isChargeMode, userChargeData);
+				});
+
+				socket.on("clearBuzzers", (currentTeam, isChargeMode, userChargeData) => {
+					clearBuzzers(currentTeam, isChargeMode, userChargeData);
 				});
 
 				socket.on("buzzInfoToClient", (buzzInfo) => {
@@ -41,9 +47,11 @@
 				$("#plus0").click(function() {
 					socket.emit("scoresToServer", 0);
 				});
+
 				$("#plus1").click(function() {
 					socket.emit("scoresToServer", 1);
 				});
+
 				$("#plus2").click(function() {
 					socket.emit("scoresToServer", 2);
 				});
@@ -53,6 +61,11 @@
 					location.reload();
 				});
 
+				$("#toggleChargeMode").click(function() {
+					socket.emit("toggleChargeMode", !isChargeModeEnabled);
+					location.reload();
+				});
+				
 				socket.on("objectionToClient", (userName) => {
 					objectionToClient(userName);
 					$("#objection").append("<button id='clearObjection' type='button' style='height: 30px;'>Clear Objections</button>");
@@ -63,6 +76,19 @@
 
 				socket.on("clearObjectionToClient", () => {
 					clearObjectionToClient();
+				});
+
+				socket.on("resetApp", () => {
+					location.href = "/";
+				});
+
+				socket.on("addBuzzerLockouts", (currentTeamNumber, lockedUser) => {
+					if (!isChargeModeEnabled) { return; }
+					if (lockedUser) { toggleUserOpacity(lockedUser, true); }
+				});
+
+				socket.on("removeBuzzerLockouts", (userId) => {
+					toggleUserOpacity(userId, false);
 				});
 			});
 		</script>
@@ -78,14 +104,23 @@
 			<button id="plus1" type="button" style="width: 110px; height: 50px;">+1 Point</button>
 			<button id="plus2" type="button" style="width: 110px; height: 50px;">+2 Points</button>
 			<p style="font-size: 11px; margin: 5px;">(all points buttons clear buzzers)</p>
-			<p id="firstBuzz"></p>
+			<p id="firstBuzzHost"></p>
 			<p id="objection">
 			</p>
 			<br>
 			<br>
 			<br>
 			<br>
-			<button id="unregisterUsers" type="button" style="height: 30px;">Remove/Reconnect all players</button>
+			<!-- <button id="lockoutBuzzers" type="button" style="height: 30px;"></button> -->
+			<button id="toggleChargeMode" type="button" style="height: 30px;"></button>
+			<br>
+			<br>
+			<div style="border: 1px solid rgba(255, 255, 255, 0.233);"></div>
+			<br>
+			<button id="unregisterUsers" type="button" style="height: 30px; margin-bottom: 10px;">Reconnect All Players</button>
+			<form action="/reset" method="POST">
+				<button type="submit" style="height: 30px;">Reset App (Disconnect Everyone)</button>
+			</form>
 		</div>
 		<div id="userListPanel">
 			<div id="PlayersList">

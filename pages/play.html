@@ -1,335 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>You can now play as Luigi</title>
-		<link rel="stylesheet" href="styleMain.css">
-		<script src="browserFunctions.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-	
-		<script>
-			$(document).ready(function() {
-				var socket = io("https://thechasebuzzer.not.codi.moe", {
-					transports: ["websocket"]
-				});
-				let buzzInTime;//for ping check
-				let queryString = new URL(location.href);
-				let userName = queryString.searchParams.get("user");
-				$("#message").html("hi "+userName+" :]")
-				let teamName = queryString.searchParams.get("team");
-				let clientBuzzer = "BuzzinLiveBuzzer";//this is mostly just used as a reference for if they have a special buzzer
-				let buzzerSoundsOn = false;
-				let buzzerOptions = [
-					["BuzzinLiveBuzzer"],
-					["PlokJUMP","PlokWaa","PlokCLEAR","PlokBOSS","PlokGIFT","PlokBONUS"],
-					["BKGuhHuh","BKKazooieJump","BKEekumBokum","BKJinjoGlaceWhistle","BKGrunty1","BKGoldenFeatherGet","BKHoneycombGet","BKEggGet"],
-					["BubsyOhYeah","BubsyUhOh","BubsyLoser","BubsyWhatCouldPawsiblyGoWrong","BubsyImOuttaHere","BubsyCheckOutThatTime"],
-					["SkunnyBoioing","SkunnyOw","SkunnyAttention","SkunnyIllBeBack","SkunnyPuddyCat","SkunnyCoocoo","SkunnyAwMan","SkunnyFroggo","SkunnyGhost"],
-					["Kirbeep","KirbyMic2","KirbySquishy","KirbyBugzzy","KirbyKracko"],
-					["Killer7Laugh"],
-					["TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight"],
-					["Jiggluigibat","SaturnHonk","Kirbeep","UltiFinishZoom","UltiChromSorry","MeleeLuigiYipee"],
-					["MarioBoing","MarioPenguin","MarioCoin","MPYosh","MPDogF","MPCatF","MarioPlum","WLHelloThere","WLAlright","WLHurryUp","WLOhBoy","MeleeLuigiYipee"],
-					["PizzaTowerTaunt1"],
-					["EBWow","EBAttack1","SaturnHonk"],
-					["AAHoldIt","AATakeThat"],
-					["Ooh"],
-					["PikminThrow","Pikmin2LouieAMV","Pikmin2Olimar","Pikmin2President","Pikmin2Breadbug"],
-					["FF9Moogle","FF7RebirthChadleyCloud","FF11FishCatch"],
-					["MGSAlert"],
-					["HKAdido","HKGrub","HKShrumalWarriorWahw"],
-					["DKOK"],
-					["SonicCheckpoint","SonicOhNo","SonicSusic"],
-					["EmergencyMeeting"],
-					["PdPSeren","TAFroggy","TAKamek"],
-					["PKMNLvlUp","PKMNCherrim","PKMNDitto","PKMNSkiploom"],
-					["MMShakeShake"],
-					["AoEWololo"],
-					["P3Summon","p4KanjiGetBent","P2HeeHo"],
-					["SplatWoomy","SplatPing"],
-					["OneShotSun","OneShotRam"],
-					["TWEWYCrunch","TWEWYNoLimits","TWEWYVerywell"],
-					["BMYoSun","BMOuch","BMBoing"],
-					["EWJPain"],
-					["SF3KenParry","SFBrazil"],
-					["DESick"],
-					["RotTHereCatch"],
-					["DoomOof","DoomPowerup"],
-					["AoWMagic1","AoWMagic4"],
-					["ROR2Lvlup"],
-					["LoZHello","LoZYahaha"],
-					["BSBunger","BSKweeble"],
-					["SourceNotification","SourceMedkit","SourceMeepMerp"],
-					["KHXBlade","KHRikuSorry"],
-					["GTMissileArf","GTGhostMode"],
-					["FECrit"],
-					["TheChasePlayerBuzz","TheChaseChaserBuzz","TheChasePotato"],
-					["KlonoaWahoo"],
-					["PPTArleBAYOEN","PPTExHarddrop","PPTLemresDonuts","PPTOPipi","PPTRingoCosine","PPTSigKapow"],
-					["Touhou6Dead","Touhou61Up","Touhou11Orin"],
-					["AC7Missile"],
-					["TGM_S"],
-					["MvC2CyclopsOpticBlast","MvC3MagnetoMagneticBlast","MvC3DrDoomFootDive","MvC3ModokAnalyzeCube","MvC3MorriganSoulFist","MvC3DeadPoolYoMama","MvC3SentinelNeutralize","MvC3ChrisREatLead","MvC3VergilMotivated","MvC3PWMoreEvidence"],
-					["MegaManXDash","MegaManXTeleport","MegaManXEnergyTankFull","MegaMan4Energy","MegaMan4Life","MegaMan4Teleport"],
-					["LaMulanaTrap","LaMulanaXmailer"],
-					["Mystery"],
-				];
-				let specialBuzzers = { 
-					PizzaTowerTaunt1: ["PizzaTowerTaunt-1","PizzaTowerTaunt0","PizzaTowerTaunt1","PizzaTowerTaunt2","PizzaTowerTaunt3","PizzaTowerTaunt4","PizzaTowerTaunt5","PizzaTowerTaunt6","PizzaTowerTaunt7","PizzaTowerTaunt8"],
-					OneShotRam: ["OneShotRam","OneShotRam","OneShotRam","OneShotRamDemon"],
-					MarioPenguin: ["MarioPenguin","MarioPenguin","MarioPenguin","MarioPenguin","MarioPenguin","MarioMegPenguin"],
-					KirbyMic2: ["KirbyMic1","KirbyMic2","KirbyMic3"],
-					HKAdido: ["HKAdido","HKShaw"],
-					MPDogF: ["MPDogA","MPDogB","MPDogC","MPDogD","MPDogE","MPDogF","MPDogG"],
-					MPCatF: ["MPCatA","MPCatB","MPCatC","MPCatD","MPCatE","MPCatF","MPCatG"],
-					DeltaruneICanDoAnything: ["DeltaruneICanDoAnything","DeltaruneChaosChaos"],
-					LoZHello: ["LoZHello","LoZHey","LoZHey","LoZHey","LoZHey","LoZListen","LoZLook","LoZWatchOut"],
-					DESick: ["DESick","DEABomb","DEYourMother","DEMakeMe"],
-					BKGrunty1: ["BKGrunty1","BKGrunty2","BKGrunty3"],
-					BKJinjoGlaceWhistle: ["BKJinjoGlaceWhistle", "BKJinjoGlaceHelp"],
-					BubsyOhYeah: ["BubsyOhYeah","BubsyHaHa","BubsyILikeIt","BubsyAlright"],
-					BubsyUhOh: ["BubsyUhOh","BubsyAwNuts","BubsyByeBye"],
-					BubsyWhatCouldPawsiblyGoWrong: ["BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyDoYouBelieveInMiracles"],
-					BubsyCheckOutThatTime: ["BubsyCheckOutThatTime","BubsyGreatScore"],
-					TGM_S: ["TGM_O","TGM_J","TGM_L","TGM_Z","TGM_S","TGM_T","TGM_I"],
-					// BubsyMyContract: ["BubsyMyContract","BubsyIsThereAVeterinarian","BubsyIsTheWritersStrikeOver","BubsyIAmATrainedPurrfessional","BubsyAPyramidScheme","BubsyWhoWroteThisStuff","BubsyAreYouStillPlayin"],
-					RotTHereCatch: ["RotTHereCatch","RotTEatLead"],
+
+<head>
+	<title>You can now play as Luigi</title>
+	<link rel="stylesheet" href="styleMain.css">
+	<script src="browserFunctions.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			var socket = io({
+				transports: ["websocket"]
+			});
+			const isChargeMode = window.location.pathname.includes("charges"); // bool to determine if charge mode currently on
+			let buzzInTime;//for ping check
+			let queryString = new URL(location.href);
+			let userName = queryString.searchParams.get("user");
+			let userId = userName.replace(" ", "_");
+			$("#message").html("hi " + userName + " :]")
+			let teamName = queryString.searchParams.get("team");
+			let clientBuzzer = "BuzzinLiveBuzzer";//this is mostly just used as a reference for if they have a special buzzer
+			let buzzerSoundsOn = false;
+			let buzzerOptions = [
+				["BuzzinLiveBuzzer"],
+				["PlokJUMP", "PlokWaa", "PlokCLEAR", "PlokBOSS", "PlokGIFT", "PlokBONUS"],
+				["BKGuhHuh", "BKKazooieJump", "BKEekumBokum", "BKJinjoGlaceWhistle", "BKGrunty1", "BKGoldenFeatherGet", "BKHoneycombGet", "BKEggGet"],
+				["BubsyOhYeah", "BubsyUhOh", "BubsyLoser", "BubsyWhatCouldPawsiblyGoWrong", "BubsyImOuttaHere", "BubsyCheckOutThatTime"],
+				["SkunnyBoioing", "SkunnyOw", "SkunnyAttention", "SkunnyIllBeBack", "SkunnyPuddyCat", "SkunnyCoocoo", "SkunnyAwMan", "SkunnyFroggo", "SkunnyGhost"],
+				["Kirbeep", "KirbyMic2", "KirbySquishy", "KirbyBugzzy", "KirbyKracko"],
+				["Killer7Laugh"],
+				["TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight"],
+				["Jiggluigibat", "SaturnHonk", "Kirbeep", "UltiFinishZoom", "UltiChromSorry", "MeleeLuigiYipee"],
+				["MarioBoing", "MarioPenguin", "MarioCoin", "MPYosh", "MPDogF", "MPCatF", "MarioPlum", "WLHelloThere", "WLAlright", "WLHurryUp", "WLOhBoy", "MeleeLuigiYipee"],
+				["PizzaTowerTaunt1"],
+				["EBWow", "EBAttack1", "SaturnHonk"],
+				["AAHoldIt", "AATakeThat"],
+				["Ooh"],
+				["PikminThrow", "Pikmin2LouieAMV", "Pikmin2Olimar", "Pikmin2President", "Pikmin2Breadbug"],
+				["FF9Moogle", "FF7RebirthChadleyCloud", "FF11FishCatch"],
+				["MGSAlert"],
+				["HKAdido", "HKGrub", "HKShrumalWarriorWahw"],
+				["DKOK"],
+				["SonicCheckpoint", "SonicOhNo", "SonicSusic"],
+				["EmergencyMeeting"],
+				["PdPSeren", "TAFroggy", "TAKamek"],
+				["PKMNLvlUp", "PKMNCherrim", "PKMNDitto", "PKMNSkiploom"],
+				["MMShakeShake"],
+				["AoEWololo"],
+				["P3Summon", "p4KanjiGetBent", "P2HeeHo"],
+				["SplatWoomy", "SplatPing"],
+				["OneShotSun", "OneShotRam"],
+				["TWEWYCrunch", "TWEWYNoLimits", "TWEWYVerywell"],
+				["BMYoSun", "BMOuch", "BMBoing"],
+				["EWJPain"],
+				["SF3KenParry", "SFBrazil"],
+				["DESick"],
+				["RotTHereCatch"],
+				["DoomOof", "DoomPowerup"],
+				["AoWMagic1", "AoWMagic4"],
+				["ROR2Lvlup"],
+				["LoZHello", "LoZYahaha"],
+				["BSBunger", "BSKweeble"],
+				["SourceNotification", "SourceMedkit", "SourceMeepMerp"],
+				["KHXBlade", "KHRikuSorry"],
+				["GTMissileArf", "GTGhostMode"],
+				["FECrit"],
+				["TheChasePlayerBuzz", "TheChaseChaserBuzz", "TheChasePotato"],
+				["KlonoaWahoo"],
+				["PPTArleBAYOEN", "PPTExHarddrop", "PPTLemresDonuts", "PPTOPipi", "PPTRingoCosine", "PPTSigKapow"],
+				["Touhou6Dead", "Touhou61Up", "Touhou11Orin"],
+				["AC7Missile"],
+				["TGM_S"],
+				["MvC2CyclopsOpticBlast", "MvC3MagnetoMagneticBlast", "MvC3DrDoomFootDive", "MvC3ModokAnalyzeCube", "MvC3MorriganSoulFist", "MvC3DeadPoolYoMama", "MvC3SentinelNeutralize", "MvC3ChrisREatLead", "MvC3VergilMotivated", "MvC3PWMoreEvidence"],
+				["MegaManXDash", "MegaManXTeleport", "MegaManXEnergyTankFull", "MegaMan4Energy", "MegaMan4Life", "MegaMan4Teleport"],
+				["LaMulanaTrap", "LaMulanaXmailer"],
+				["Mystery"],
+			];
+			let specialBuzzers = {
+				PizzaTowerTaunt1: ["PizzaTowerTaunt-1", "PizzaTowerTaunt0", "PizzaTowerTaunt1", "PizzaTowerTaunt2", "PizzaTowerTaunt3", "PizzaTowerTaunt4", "PizzaTowerTaunt5", "PizzaTowerTaunt6", "PizzaTowerTaunt7", "PizzaTowerTaunt8"],
+				OneShotRam: ["OneShotRam", "OneShotRam", "OneShotRam", "OneShotRamDemon"],
+				MarioPenguin: ["MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioMegPenguin"],
+				KirbyMic2: ["KirbyMic1", "KirbyMic2", "KirbyMic3"],
+				HKAdido: ["HKAdido", "HKShaw"],
+				MPDogF: ["MPDogA", "MPDogB", "MPDogC", "MPDogD", "MPDogE", "MPDogF", "MPDogG"],
+				MPCatF: ["MPCatA", "MPCatB", "MPCatC", "MPCatD", "MPCatE", "MPCatF", "MPCatG"],
+				DeltaruneICanDoAnything: ["DeltaruneICanDoAnything", "DeltaruneChaosChaos"],
+				LoZHello: ["LoZHello", "LoZHey", "LoZHey", "LoZHey", "LoZHey", "LoZListen", "LoZLook", "LoZWatchOut"],
+				DESick: ["DESick", "DEABomb", "DEYourMother", "DEMakeMe"],
+				BKGrunty1: ["BKGrunty1", "BKGrunty2", "BKGrunty3"],
+				BKJinjoGlaceWhistle: ["BKJinjoGlaceWhistle", "BKJinjoGlaceHelp"],
+				BubsyOhYeah: ["BubsyOhYeah", "BubsyHaHa", "BubsyILikeIt", "BubsyAlright"],
+				BubsyUhOh: ["BubsyUhOh", "BubsyAwNuts", "BubsyByeBye"],
+				BubsyWhatCouldPawsiblyGoWrong: ["BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyDoYouBelieveInMiracles"],
+				BubsyCheckOutThatTime: ["BubsyCheckOutThatTime", "BubsyGreatScore"],
+				TGM_S: ["TGM_O", "TGM_J", "TGM_L", "TGM_Z", "TGM_S", "TGM_T", "TGM_I"],
+				// BubsyMyContract: ["BubsyMyContract","BubsyIsThereAVeterinarian","BubsyIsTheWritersStrikeOver","BubsyIAmATrainedPurrfessional","BubsyAPyramidScheme","BubsyWhoWroteThisStuff","BubsyAreYouStillPlayin"],
+				RotTHereCatch: ["RotTHereCatch", "RotTEatLead"],
+			}
+			let animatedBuzzers = ["SF3KenParry", "PlokCLEAR", "FECrit"];
+			let buzzerOptionsCurrentRow = 0;
+			let buzzerOptionsTotalRows = Math.ceil(buzzerOptions.length / 10);
+
+			function displayBuzzerOptions() {
+				$("#buzzerOptions").html("");
+				$("#buzzerOptions").append("<div class=buzzerGroup id='buzzerOptionsPrev'>\<</div>");
+				for (let i = 0; i < 10; i++) {
+					let buzzerGroup = buzzerOptions[buzzerOptionsCurrentRow * 10 + i];
+					if (buzzerGroup != null) {
+						const groupFaceId = buzzerGroup[0];
+						const buzzerGroupHTML = $("<div class=buzzerGroup><small>" + buzzerGroup.length + "</small><img id='" + groupFaceId + "' src='" + groupFaceId + ".png'> <div class=buzzerGroupItems hidden> </div>");
+						buzzerGroup.forEach((buzzerId) => {
+							buzzerGroupHTML.find(".buzzerGroupItems").append("<img id='" + buzzerId + "' src='" + buzzerId + ".png'>");
+						});
+						$("#buzzerOptions").append(buzzerGroupHTML);
+					}
 				}
-				let animatedBuzzers = ["SF3KenParry","PlokCLEAR","FECrit"];
-				let buzzerOptionsCurrentRow = 0;
-				let buzzerOptionsTotalRows = Math.ceil(buzzerOptions.length / 10);
-				function displayBuzzerOptions() {
-					$("#buzzerOptions").html("");
-					$("#buzzerOptions").append("<div class=buzzerGroup id='buzzerOptionsPrev'>\<</div>");
-					for (let i= 0; i<10; i++){
-						let buzzerGroup = buzzerOptions[buzzerOptionsCurrentRow*10+i];
-						if (buzzerGroup != null) {
-							const groupFaceId = buzzerGroup[0];
-							const buzzerGroupHTML = $("<div class=buzzerGroup><small>"+buzzerGroup.length+"</small><img id='"+groupFaceId+"' src='"+groupFaceId+".png'> <div class=buzzerGroupItems hidden> </div>");
-							buzzerGroup.forEach((buzzerId) => {						
-								buzzerGroupHTML.find(".buzzerGroupItems").append("<img id='"+buzzerId+"' src='"+buzzerId+".png'>");
-							});
-							$("#buzzerOptions").append(buzzerGroupHTML);
-						}
+				$("#buzzerOptions").append("<div class=buzzerGroup id='buzzerOptionsNext'>\></div>");
+
+				$(".buzzerGroup").mousedown(function () {
+					$(".buzzerGroupItems").hide();
+					$(this).find(".buzzerGroupItems").show();
+				});
+
+				$("#buzzerOptions img").mousedown(function () {
+					let buzzerId = $(this).attr("id");
+					clientBuzzer = buzzerId;
+					if (specialBuzzers[buzzerId] != null) {
+						buzzerId = specialBuzzers[buzzerId][Math.floor(Math.random() * (specialBuzzers[buzzerId].length))];
 					}
-					$("#buzzerOptions").append("<div class=buzzerGroup id='buzzerOptionsNext'>\></div>");
-
-					$(".buzzerGroup").mousedown(function() {
-						$(".buzzerGroupItems").hide();
-						$(this).find(".buzzerGroupItems").show();
-					});
-
-					$("#buzzerOptions img").mousedown(function() {
-						let buzzerId = $(this).attr("id");
-						clientBuzzer = buzzerId;
-						if (specialBuzzers[buzzerId] != null) {
-							buzzerId = specialBuzzers[buzzerId][Math.floor(Math.random()*(specialBuzzers[buzzerId].length))];
-						}
-						if (buzzerId == "Mystery") {
-							buzzerOptionsFlat = buzzerOptions.flat();
-							buzzerId = buzzerOptionsFlat[Math.floor(Math.random()*(buzzerOptionsFlat.length-1))];
-						}
-						socket.emit("updateUserInfo", userName, teamName, buzzerId);
-						let buzzerSound = new Audio(buzzerId+".wav");
-						if (animatedBuzzers.includes(buzzerId)) {
-							$("#buzzer").attr("src", buzzerId+".gif" );
-						}
-						else {
-							$("#buzzer").attr("src", buzzerId+".png" );
-						}
-						
-						buzzerSound.play();
-					});
-
-					$("#buzzerOptionsNext").mousedown(function() {
-						buzzerOptionsCurrentRow += 1;
-						buzzerOptionsCurrentRow = ((buzzerOptionsCurrentRow % buzzerOptionsTotalRows) + buzzerOptionsTotalRows) % buzzerOptionsTotalRows //true modulo
-						displayBuzzerOptions();
-					});
-					$("#buzzerOptionsPrev").mousedown(function() {
-						buzzerOptionsCurrentRow = buzzerOptionsCurrentRow-1;
-						buzzerOptionsCurrentRow = ((buzzerOptionsCurrentRow % buzzerOptionsTotalRows) + buzzerOptionsTotalRows) % buzzerOptionsTotalRows	//true modulo
-						displayBuzzerOptions();
-					});
-				}
-				displayBuzzerOptions();
-
-				$("#buzzer").attr("src", buzzerOptions[0][0]+".png" );
-				$("#buzzer").css("opacity", "0.2");
-				$("#buzzer").css("cursor", "not-allowed");
-				let buzzable = false;
-
-				socket.emit("updateUserInfo", userName, teamName, clientBuzzer);//initial user registration
-
-				socket.on("userInfoToClient", (userInfo) => {
-					userInfoToClient(userInfo);
-				});
-
-				socket.on("reconnectUsers", () => {
-					location.reload();
-				});
-
-				socket.on("gameStateToClient", (currentTeam, currentScore) => {
-					gameStateToClient(currentTeam, currentScore);
-				});
-
-				socket.on("clearBuzzers", (currentTeam) => {
-					if (currentTeam == teamName) {
-						buzzable = true;
-						$("#buzzer").css("cursor", "pointer");
-						$("#buzzer").css("opacity", "1");
-					} else {
-						buzzable = false;
-						$("#buzzer").css("cursor", "not-allowed");
-						$("#buzzer").css("opacity", "0.2");
+					if (buzzerId == "Mystery") {
+						buzzerOptionsFlat = buzzerOptions.flat();
+						buzzerId = buzzerOptionsFlat[Math.floor(Math.random() * (buzzerOptionsFlat.length - 1))];
 					}
-					clearBuzzers();
-				});
-
-				socket.on("buzzInfoToClient", (buzzInfo) => {
-					buzzInfoToClient(buzzInfo, buzzerSoundsOn);
-				});
-				
-				socket.on("pingClient", (timeStamp) => {
-					const ping = new Date().getTime() - timeStamp;
-					console.log("ping: "+ping);
-				});
-				
-				socket.on("idkListToClient", (idkList) => {
-					idkListToClient(idkList);
-				});
-
-				socket.on("passToClient", (teamName) => {
-					passToClient(teamName, buzzerSoundsOn);
-				});
-
-				$(document).keydown(function(e) {
-					if(e.which == 32) {
-						buzzIn();
-					}
-				});
-
-				$("#buzzer").mousedown(function() {
-					buzzIn();
-				});
-				
-				function buzzIn() {
-					if (buzzable) {
-
-						buzzable = false;
-						$("#buzzer").css("opacity", "0.2");
-						$("#buzzer").css("cursor", "not-allowed");
-						buzzInTime = new Date().getTime();
-						
-						
-						if (specialBuzzers[clientBuzzer] != null) {
-							let buzzerId = specialBuzzers[clientBuzzer][Math.floor(Math.random()*(specialBuzzers[clientBuzzer].length))];
-							$("#buzzer").attr("src", buzzerId+".png" );
-							socket.emit("updateUserInfo", userName, teamName, buzzerId);
-						}
-						else if (animatedBuzzers.includes(clientBuzzer)) {
-							$("#buzzer").attr("src", clientBuzzer+".gif" );
-							socket.emit("updateUserInfo", userName, teamName, clientBuzzer);
-						}
-						socket.emit("buzzerPressed", userName, buzzInTime);
-						socket.emit("pingServer", new Date().getTime());
+					socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+					let buzzerSound = new Audio(buzzerId + ".wav");
+					if (animatedBuzzers.includes(buzzerId)) {
+						$("#buzzer").attr("src", buzzerId + ".gif");
 					}
 					else {
-						let denySelectSound = new Audio("SourceDenySelect.wav");
-						denySelectSound.play();
+						$("#buzzer").attr("src", buzzerId + ".png");
 					}
-				}
 
-				$("#idkButton").mousedown(function() {
-					socket.emit("idkButtonPressed", userName);
+					buzzerSound.play();
 				});
 
-				$(document).keydown(function(e) {
-					if(e.which == 73 || e.which == 68 || e.which == 75) {
-						socket.emit("idkButtonPressed", userName);
-					}
+				$("#buzzerOptionsNext").mousedown(function () {
+					buzzerOptionsCurrentRow += 1;
+					buzzerOptionsCurrentRow = ((buzzerOptionsCurrentRow % buzzerOptionsTotalRows) + buzzerOptionsTotalRows) % buzzerOptionsTotalRows //true modulo
+					displayBuzzerOptions();
 				});
-
-				$("#contestAnswer").find("img").mousedown(function() {
-					socket.emit("objectionToServer", userName);
-					let objectionSound = new Audio("AAObjection.wav");
-					objectionSound.play();
+				$("#buzzerOptionsPrev").mousedown(function () {
+					buzzerOptionsCurrentRow = buzzerOptionsCurrentRow - 1;
+					buzzerOptionsCurrentRow = ((buzzerOptionsCurrentRow % buzzerOptionsTotalRows) + buzzerOptionsTotalRows) % buzzerOptionsTotalRows	//true modulo
+					displayBuzzerOptions();
 				});
+			}
+			displayBuzzerOptions();
 
-				$("#contestAnswer").find("img").hover(
-					function() {
-						$(this).attr("src", "AAEvidence.gif");
-					}, function() {
-						$(this).attr("src", "AAEvidence.png");
-					}
-				);
+			socket.emit("getCurrentTeam");
 
-				// socket.on("objectionToClient", (userName) => {
-				// 	objectionToClient(userName);
-				// });
-				
-				// socket.on("clearObjectionToClient", () => {
-				// 	clearObjectionToClient();
-				// });
-				window.secret = function() {
-					console.log("Rrree Neurgh!!! :D")
-					let reeeNeurgh = new Audio("LSRrreeNeurgh.wav");
-					reeeNeurgh.play();
-					$("#buzzer").attr("src", "LSRrreeNeurgh.png" );
-					let buzzerId = "LSRrreeNeurgh"
-					clientBuzzer = buzzerId;
-					socket.emit("updateUserInfo", userName, teamName, buzzerId);
-				}
-				window.mute = function() {
-					buzzerSoundsOn = !buzzerSoundsOn;
-					console.log("buzzerSoundsOn: "+buzzerSoundsOn);
+			socket.on("currentTeam", (currentTeamNumber, buzzInfo, userChargeData) => {
+				$("#buzzer").attr("src", buzzerOptions[0][0] + ".png");
+				const isPlayerTurn = teamName == "Players";
+				if (currentTeamNumber == 0) {
+					toggleBuzzer(isPlayerTurn);
+				} else {
+					toggleBuzzer(!isPlayerTurn);
 				}
 			});
-		</script>
-	</head>
-	<body>
-		<p id="message"></p>
-		<div id="interface">
-			<p id="currentTeam"></p>
-			Progress:
-			<p id="currentScore"></p>
+
+			socket.emit("updateUserInfo", userName, teamName, clientBuzzer, isChargeMode); //initial user registration
+
+			socket.on("userInfoToClient", (userInfo, isChargeModeEnabled, userChargeData) => {
+				userInfoToClient(userInfo, isChargeModeEnabled, userChargeData);
+			});
+
+			socket.on("reconnectUsers", () => {
+				location.reload();
+			});
+
+			socket.on("gameStateToClient", (currentTeam, currentScore, isChargeMode, userChargeData) => {
+				gameStateToClient(currentTeam, currentScore, isChargeMode, userChargeData);
+			});
+
+			socket.on("clearBuzzers", (currentTeam, isChargeMode, userChargeData) => {
+				toggleBuzzer(currentTeam == teamName);
+				clearBuzzers(currentTeam, isChargeMode, userChargeData);
+			});
+
+			socket.on("addBuzzerLockouts", (currentTeamNumber, lockedUser) => {
+				if (!isChargeMode) { return; }
+
+				if (lockedUser == userId) {
+					toggleBuzzer(false);
+					toggleIdk(false);
+				}
+				
+				toggleUserOpacity(lockedUser, true);
+			});
+
+			socket.on("removeBuzzerLockouts", (userId) => {
+				if (!isChargeMode) { return; }
+
+				toggleBuzzer(true);
+				toggleUserOpacity(userId, false);
+			});
+
+			socket.on("buzzInfoToClient", (buzzInfo) => {
+				buzzInfoToClient(buzzInfo, buzzerSoundsOn);
+			});
+
+			socket.on("pingClient", (timeStamp) => {
+				const ping = new Date().getTime() - timeStamp;
+				console.log("ping: " + ping);
+			});
+
+			socket.on("idkListToClient", (idkList) => {
+				idkListToClient(idkList);
+			});
+
+			socket.on("passToClient", (teamName) => {
+				passToClient(teamName, buzzerSoundsOn);
+			});
+
+			$(document).keydown(function (e) {
+				if (e.which == 32) {
+					buzzIn();
+				}
+			});
+
+			$("#buzzer").mousedown(function () {
+				buzzIn();
+			});
+
+			function buzzIn() {
+				if (buzzable) {
+					buzzable = false;
+					$("#buzzer").css("opacity", "0.5");
+					$("#buzzer").css("cursor", "not-allowed");
+					buzzInTime = new Date().getTime();
+
+					if (specialBuzzers[clientBuzzer] != null) {
+						let buzzerId = specialBuzzers[clientBuzzer][Math.floor(Math.random() * (specialBuzzers[clientBuzzer].length))];
+						$("#buzzer").attr("src", buzzerId + ".png");
+						socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+					}
+					else if (animatedBuzzers.includes(clientBuzzer)) {
+						$("#buzzer").attr("src", clientBuzzer + ".gif");
+						socket.emit("updateUserInfo", userName, teamName, clientBuzzer, isChargeMode);
+					}
+					socket.emit("buzzerPressed", userName, buzzInTime);
+					socket.emit("pingServer", new Date().getTime());
+				}
+				else {
+					let denySelectSound = new Audio("SourceDenySelect.wav");
+					denySelectSound.play();
+				}
+			}
+
+			$("#idkButton").mousedown(function () {
+				if (!buzzable) { return; }
+				socket.emit("idkButtonPressed", userName);
+			});
+
+			$(document).keydown(function (e) {
+				if (!buzzable) { return; }
+				if (e.which == 73 || e.which == 68 || e.which == 75) {
+					socket.emit("idkButtonPressed", userName);
+				}
+			});
+
+			$("#contestAnswer").find("img").mousedown(function () {
+				socket.emit("objectionToServer", userName);
+				let objectionSound = new Audio("AAObjection.wav");
+				objectionSound.play();
+			});
+
+			$("#contestAnswer").find("img").hover(
+				function () {
+					$(this).attr("src", "AAEvidence.gif");
+				}, function () {
+					$(this).attr("src", "AAEvidence.png");
+				}
+			);
+
+			window.secret = function () {
+				console.log("Rrree Neurgh!!! :D")
+				let reeeNeurgh = new Audio("LSRrreeNeurgh.wav");
+				reeeNeurgh.play();
+				$("#buzzer").attr("src", "LSRrreeNeurgh.png");
+				let buzzerId = "LSRrreeNeurgh"
+				clientBuzzer = buzzerId;
+				socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+			}
+			window.mute = function () {
+				buzzerSoundsOn = !buzzerSoundsOn;
+				console.log("buzzerSoundsOn: " + buzzerSoundsOn);
+			}
+
+			socket.on("resetApp", () => {
+				socket.disconnect(true);
+				location.href = "/";
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<p id="message"></p>
+	<div id="interface">
+		<p id="currentTeam"></p>
+		Progress:
+		<p id="currentScore"></p>
+		<br>
+		<img id="buzzer" alt="The buzzer">
+		<br>
+		<p id="firstBuzz"></p>
+		<p id="instructions">
+			Click the buzzer above or press spacebar to buzz in.
 			<br>
-			<img id="buzzer" alt="The buzzer">
+			You can only buzz in on your team's turn.
 			<br>
-			<p id="firstBuzz"></p>
-			<p id="instructions">
-				Click the buzzer above or press spacebar to buzz in.
-				<br>
-				You can only buzz in on your team's turn.
-				<br>
-				<br>
-				Click the button below to let your team know you are willing to pass.
-				<br>
-				You can also do this by pressing the I, D or K key.
-			</p>
-			<img id="idkButton" src="idkButton.png" width="125px">
-			<!-- <div id="objection"> -->
-			</div>
+			<br>
+			Click the button below to let your team know you are willing to pass.
+			<br>
+			You can also do this by pressing the I, D or K key.
+		</p>
+		<img id="idkButton" src="idkButton.png" width="125px">
+		<!-- <div id="objection"> -->
+	</div>
+	</div>
+	<div id="userListPanel">
+		<div id="PlayersList">
+			Players:
+			<ul></ul>
 		</div>
-		<div id="userListPanel">
-			<div id="PlayersList">
-				Players:
-				<ul></ul>
-			</div>
-			<div id="ChasersList">
-				Chasers:
-				<ul></ul>
-			</div>
+		<div id="ChasersList">
+			Chasers:
+			<ul></ul>
 		</div>
-		<div id="buzzerOptions">
-		</div>
-		<div id="contestAnswer">
-			<img src="AAEvidence.png" >
-			<p>
-				Click to contest an answer marked incorrectly.
-				<br>
-				(please use sparingly)
-			</p>
+	</div>
+	<div id="buzzerOptions">
+	</div>
+	<div id="contestAnswer">
+		<img src="AAEvidence.png">
+		<p>
+			Click to contest an answer marked incorrectly.
+			<br>
+			(please use sparingly)
+		</p>
 		<div>
-	</body>
+</body>
 </html>

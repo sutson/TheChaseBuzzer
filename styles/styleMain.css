@@ -25,6 +25,17 @@ a, a:visited {
     min-height: 30px;
 }
 
+#firstBuzzHost {
+    min-height: 30px;
+    margin-top: 80px;
+}
+
+.chargeBlocks {
+  display: flex;
+  flex-direction: column;
+  font-family: monospace;
+}
+
 #objection {
     left: 50%;
     margin-left: -250px;
@@ -84,6 +95,38 @@ a, a:visited {
     position: absolute;
     left: 724px;
     border: dashed;
+    width: 400px;
+    min-height: 170px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+}
+
+#userListPanelHome {
+    position: absolute;
+    left: 50%;
+    width: 1200px;
+    margin-left: -600px;
+    top: 200px;
+}
+
+#PlayersListHome {
+    position: absolute;
+    text-align: left;
+    left: -20px;
+    color: rgba(255, 255, 255, 0.644);
+    border: 3px dashed rgba(255, 255, 255, 0.425);
+    width: 400px;
+    min-height: 170px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+}
+
+#ChasersListHome {
+    position: absolute;
+    text-align: left;
+    left: 804px;
+    color: rgba(255, 255, 255, 0.644);
+    border: 3px dashed rgba(255, 255, 255, 0.425);
     width: 400px;
     min-height: 170px;
     padding-left: 5px;
@@ -172,6 +215,14 @@ ul {
     padding-right: 10px;
 }
 
+.userListBuzzerSelectionsHome {
+    width: 30px;
+    position: relative;
+    top: 5px;
+    padding-right: 10px;
+    opacity: 50%;
+}
+
 @media (max-width: 600px) {
     #objection {
         margin-left: 0px;
@@ -199,6 +250,19 @@ ul {
     #ChasersList {
         left: 370px;
         width: 120px;
+    }
+
+    #PlayersListHome {
+        left: 0px;
+        width: 120px;
+    }
+    #ChasersListHome {
+        left: 370px;
+        width: 120px;
+    }
+
+    #firstBuzzHost {
+        margin-top: 20px;
     }
 }
 
