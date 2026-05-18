@@ -148,6 +148,7 @@
 			let animatedBuzzers = ["SF3KenParry", "PlokCLEAR", "FECrit"];
 			let buzzerOptionsCurrentRow = 0;
 			let buzzerOptionsTotalRows = Math.ceil(buzzerOptions.length / 10);
+			let defaultBuzzer = `${buzzerOptions[0][0]}.png`;
 
 			function displayBuzzerOptions() {
 				$("#buzzerOptions").html("");
@@ -205,10 +206,11 @@
 			}
 			displayBuzzerOptions();
 
+			$("#buzzer").attr("src", defaultBuzzer);
+
 			socket.emit("getCurrentTeam");
 
 			socket.on("currentTeam", (currentTeamNumber, buzzInfo, userChargeData) => {
-				$("#buzzer").attr("src", buzzerOptions[0][0] + ".png");
 				const isPlayerTurn = teamName == "Players";
 				if (currentTeamNumber == 0) {
 					toggleBuzzer(isPlayerTurn);
