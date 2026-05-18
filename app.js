@@ -35,11 +35,14 @@ async function resetApp() {
   Object.keys(options).forEach(x => delete options[x]);
   userMap.clear();
   buzzInfo.splice(0, buzzInfo.length);
-  idkList.splice(0, buzzInfo.length);
+  idkList.splice(0, idkList.length);
+  userList.splice(0, userList.length);
   Object.keys(userMap).forEach(x => delete userMap[x]);
   Object.keys(userInfo).forEach(x => delete userInfo[x]);
+  Object.keys(userChargeData).forEach(x => delete userChargeData[x]);
   anyObjections = false;
-  teamsList.splice(0, buzzInfo.length, "Players", "Chasers");
+  isChargeModeEnabled = false;
+  teamsList.splice(0, teamsList.length, "Players", "Chasers");
   teamsScore.splice(0, teamsScore.length, 0, 0);
   currentTeamNumber = 0;
 
