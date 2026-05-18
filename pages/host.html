@@ -44,6 +44,10 @@
 					passToClient(teamName, true);
 				});
 
+				$("#enableSound").click(function() {
+					$("#enableSound").remove()
+				});
+
 				$("#plus0").click(function() {
 					socket.emit("scoresToServer", 0);
 				});
@@ -95,10 +99,15 @@
 	</head>
 	<body>
 		<p id="message">hi quetz :]</p>
+		<div id="enableSound">
+			<div id="enableSoundText">
+				Click Anywhere to Enable Sound
+			</div>
+		</div>
 		<div id="interface">
 			<p id="currentTeam"></p>
 			Progress:
-			<p id="currentScore"></p>			
+			<p id="currentScore"></p>
 			<button id="plus0" type="button" style="width: 230px; height: 50px; margin: 5px;">+0 Points</button>
 			<br>
 			<button id="plus1" type="button" style="width: 110px; height: 50px;">+1 Point</button>

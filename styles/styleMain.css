@@ -30,6 +30,23 @@ a, a:visited {
     margin-top: 80px;
 }
 
+#enableSound {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+#enableSoundText {
+    font-size: 4rem;
+}
+
 .chargeBlocks {
   display: flex;
   flex-direction: column;
