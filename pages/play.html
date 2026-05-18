@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	<title>You can now play as Luigi</title>
+	<title>Thank the Builder for the trials that shape thee.</title>
 	<link rel="stylesheet" href="styleMain.css">
 	<script src="browserFunctions.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -24,79 +24,126 @@
 			let buzzerSoundsOn = false;
 			let buzzerOptions = [
 				["BuzzinLiveBuzzer"],
-				["PlokJUMP", "PlokWaa", "PlokCLEAR", "PlokBOSS", "PlokGIFT", "PlokBONUS"],
-				["BKGuhHuh", "BKKazooieJump", "BKEekumBokum", "BKJinjoGlaceWhistle", "BKGrunty1", "BKGoldenFeatherGet", "BKHoneycombGet", "BKEggGet"],
-				["BubsyOhYeah", "BubsyUhOh", "BubsyLoser", "BubsyWhatCouldPawsiblyGoWrong", "BubsyImOuttaHere", "BubsyCheckOutThatTime"],
-				["SkunnyBoioing", "SkunnyOw", "SkunnyAttention", "SkunnyIllBeBack", "SkunnyPuddyCat", "SkunnyCoocoo", "SkunnyAwMan", "SkunnyFroggo", "SkunnyGhost"],
-				["Kirbeep", "KirbyMic2", "KirbySquishy", "KirbyBugzzy", "KirbyKracko"],
+				["PlokJUMP","PlokWaa","PlokCLEAR","PlokBOSS","PlokGIFT","PlokBONUS"],
+				["BKGuhHuh","BKKazooieJump","BKEekumBokum","BKJinjoGlaceWhistle","BKGrunty1","BKGoldenFeatherGet","BKHoneycombGet","BKEggGet"],
+				["BubsyOhYeah","BubsyUhOh","BubsyLoser","BubsyWhatCouldPawsiblyGoWrong","BubsyImOuttaHere","BubsyCheckOutThatTime"],
+				["SkunnyBoioing","SkunnyOw","SkunnyAttention","SkunnyIllBeBack","SkunnyPuddyCat","SkunnyCoocoo","SkunnyAwMan","SkunnyFroggo","SkunnyGhost"],
+				["Kirbeep","KirbyMic2","KirbySquishy","KirbyBugzzy","KirbyKracko"],
 				["Killer7Laugh"],
-				["TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight", "TheNumberEight"],
-				["Jiggluigibat", "SaturnHonk", "Kirbeep", "UltiFinishZoom", "UltiChromSorry", "MeleeLuigiYipee"],
-				["MarioBoing", "MarioPenguin", "MarioCoin", "MPYosh", "MPDogF", "MPCatF", "MarioPlum", "WLHelloThere", "WLAlright", "WLHurryUp", "WLOhBoy", "MeleeLuigiYipee"],
+				["TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight","TheNumberEight"],
+				["Jiggluigibat","SaturnHonk","Kirbeep","UltiFinishZoom","UltiChromSorry","MeleeLuigiYipee"],
+				["MarioBoing","MarioPenguin","MarioCoin","MPYosh","MPDogF","MPCatF","MarioPlum","WLHelloThere","WLAlright","WLHurryUp","WLOhBoy","WWYEAH","MeleeLuigiYipee","Cackletta","FawfulLaugh"],
 				["PizzaTowerTaunt1"],
-				["EBWow", "EBAttack1", "SaturnHonk"],
-				["AAHoldIt", "AATakeThat"],
+				["EBWow","EBAttack1","SaturnHonk"],
+				["AAHoldIt","AATakeThat"],
 				["Ooh"],
-				["PikminThrow", "Pikmin2LouieAMV", "Pikmin2Olimar", "Pikmin2President", "Pikmin2Breadbug"],
-				["FF9Moogle", "FF7RebirthChadleyCloud", "FF11FishCatch"],
+				["PikminThrow","Pikmin2LouieAMV","Pikmin2Olimar","Pikmin2President","Pikmin2Breadbug"],
+				["FF9Moogle","FF7RebirthChadleyCloud","FF11FishCatch","FFTLU","FFTJLU","FFLaHee"],
 				["MGSAlert"],
-				["HKAdido", "HKGrub", "HKShrumalWarriorWahw"],
+				["HKAdido","HKGrub","HKShrumalWarriorWahw"],
 				["DKOK"],
-				["SonicCheckpoint", "SonicOhNo", "SonicSusic"],
+				["SonicCheckpoint","SonicOhNo","SonicSusic"],
 				["EmergencyMeeting"],
-				["PdPSeren", "TAFroggy", "TAKamek"],
-				["PKMNLvlUp", "PKMNCherrim", "PKMNDitto", "PKMNSkiploom"],
+				["PdPSeren","TAFroggy","TAKamek"],
+				["PKMNLvlUp","PKMNCherrim","PKMNDitto","PKMNSkiploom"],
 				["MMShakeShake"],
-				["AoEWololo"],
-				["P3Summon", "p4KanjiGetBent", "P2HeeHo"],
-				["SplatWoomy", "SplatPing"],
-				["OneShotSun", "OneShotRam"],
-				["TWEWYCrunch", "TWEWYNoLimits", "TWEWYVerywell"],
-				["BMYoSun", "BMOuch", "BMBoing"],
+				["AoEWololo","AoMProstagma","AoMVillagerSpawn","AoMSoldierSpawn"],
+				["P3Summon","p4KanjiGetBent","P2HeeHo"],
+				["SplatWoomy","SplatPing"],
+				["OneShotSun","OneShotRam"],
+				["TWEWYCrunch","TWEWYNoLimits","TWEWYVerywell","TWEWYReady","TWEWYFShop1"],
+				["BMYoSun","BMOuch","BMBoing"],
 				["EWJPain"],
-				["SF3KenParry", "SFBrazil"],
+				["SF3KenParry","SFBrazil"],
 				["DESick"],
 				["RotTHereCatch"],
-				["DoomOof", "DoomPowerup"],
-				["AoWMagic1", "AoWMagic4"],
+				["DoomOof","DoomPowerup"],
+				["AoWMagic1","AoWMagic4"],
 				["ROR2Lvlup"],
-				["LoZHello", "LoZYahaha"],
-				["BSBunger", "BSKweeble"],
-				["SourceNotification", "SourceMedkit", "SourceMeepMerp"],
-				["KHXBlade", "KHRikuSorry"],
-				["GTMissileArf", "GTGhostMode"],
+				["LoZHello","LoZYahaha","LoZHWKing1"],
+				["BSBunger","BSKweeble"],
+				["SourceNotification","SourceMedkit","SourceMeepMerp"],
+				["KHXBlade","KHRikuSorry"],
+				["GTMissileArf","GTGhostMode"],
 				["FECrit"],
-				["TheChasePlayerBuzz", "TheChaseChaserBuzz", "TheChasePotato"],
+				["TheChasePlayerBuzz","TheChaseChaserBuzz","TheChasePotato"],
 				["KlonoaWahoo"],
-				["PPTArleBAYOEN", "PPTExHarddrop", "PPTLemresDonuts", "PPTOPipi", "PPTRingoCosine", "PPTSigKapow"],
-				["Touhou6Dead", "Touhou61Up", "Touhou11Orin"],
+				["PPTArleBAYOEN","PPTExHarddrop","PPTLemresDonuts","PPTOPipi","PPTRingoCosine","PPTSigKapow"],
+				["Touhou6Dead","Touhou61Up","Touhou11Orin"],
 				["AC7Missile"],
 				["TGM_S"],
-				["MvC2CyclopsOpticBlast", "MvC3MagnetoMagneticBlast", "MvC3DrDoomFootDive", "MvC3ModokAnalyzeCube", "MvC3MorriganSoulFist", "MvC3DeadPoolYoMama", "MvC3SentinelNeutralize", "MvC3ChrisREatLead", "MvC3VergilMotivated", "MvC3PWMoreEvidence"],
-				["MegaManXDash", "MegaManXTeleport", "MegaManXEnergyTankFull", "MegaMan4Energy", "MegaMan4Life", "MegaMan4Teleport"],
-				["LaMulanaTrap", "LaMulanaXmailer"],
+				["MvC2CyclopsOpticBlast","MvC3MagnetoMagneticBlast","MvC3DrDoomFootDive","MvC3ModokAnalyzeCube","MvC3MorriganSoulFist","MvC3DeadPoolYoMama","MvC3SentinelNeutralize","MvC3ChrisREatLead","MvC3VergilMotivated","MvC3PWMoreEvidence"],
+				["CVBelmont","CVBrachyura","CVJonathan","CVLibrarian","CVSlice","CVWings","CVCV","CVGettem","CVGo2Hell"],
+				["MegaManXDash","MegaManXTeleport","MegaManXEnergyTankFull","MegaMan4Energy","MegaMan4Life","MegaMan4Teleport"],
+				["LaMulanaTrap","LaMulanaXmailer"],
+				["Crash1Whoa","Crash1Spin","Crash1Chomp","CrashTFish"],
+				["Hatsworth1"],
+				["HotelDusk"],
+				["KemcoMove"],
+				["LaytonStart","LaytonFind","LaytonCoin"],
+				["PNCensor1","PNBoyd1","PNGM1"],
+				["REsubmit"],
+				["ShenmueQTE"],
+				["SimpsonsHRDoh","SimpsonsHRLaCuca","SimpsonsHRPauseOff","SimpsonsHRScroll","SimpsonsHRVote"],
+				["SimsCrowl"],
+				["StrifeIDCheck","StrifeBingo"],
+				["TCSOAngie1","TCSONaomi1"],
+				["TenchuCmon"],
+				["TES1Halt","TES3Come"],
+				["ThiefGarrett","ThiefGuard1","ThiefLoot"],
+				["Wolf3DYEAH","Wolf3DAchtung"],
+				["XB1Coo","XB1Reyn1","XB2ASYADONE","XB2Phantasm1"],
+				["HereticLaugh","HereticImp","HereticGolem","HereticWings"],
+				["DTAIOuji1"],
 				["Mystery"],
 			];
-			let specialBuzzers = {
-				PizzaTowerTaunt1: ["PizzaTowerTaunt-1", "PizzaTowerTaunt0", "PizzaTowerTaunt1", "PizzaTowerTaunt2", "PizzaTowerTaunt3", "PizzaTowerTaunt4", "PizzaTowerTaunt5", "PizzaTowerTaunt6", "PizzaTowerTaunt7", "PizzaTowerTaunt8"],
-				OneShotRam: ["OneShotRam", "OneShotRam", "OneShotRam", "OneShotRamDemon"],
-				MarioPenguin: ["MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioPenguin", "MarioMegPenguin"],
-				KirbyMic2: ["KirbyMic1", "KirbyMic2", "KirbyMic3"],
-				HKAdido: ["HKAdido", "HKShaw"],
-				MPDogF: ["MPDogA", "MPDogB", "MPDogC", "MPDogD", "MPDogE", "MPDogF", "MPDogG"],
-				MPCatF: ["MPCatA", "MPCatB", "MPCatC", "MPCatD", "MPCatE", "MPCatF", "MPCatG"],
-				DeltaruneICanDoAnything: ["DeltaruneICanDoAnything", "DeltaruneChaosChaos"],
-				LoZHello: ["LoZHello", "LoZHey", "LoZHey", "LoZHey", "LoZHey", "LoZListen", "LoZLook", "LoZWatchOut"],
-				DESick: ["DESick", "DEABomb", "DEYourMother", "DEMakeMe"],
-				BKGrunty1: ["BKGrunty1", "BKGrunty2", "BKGrunty3"],
+			let specialBuzzers = { 
+				PizzaTowerTaunt1: ["PizzaTowerTaunt-1","PizzaTowerTaunt0","PizzaTowerTaunt1","PizzaTowerTaunt2","PizzaTowerTaunt3","PizzaTowerTaunt4","PizzaTowerTaunt5","PizzaTowerTaunt6","PizzaTowerTaunt7","PizzaTowerTaunt8"],
+				OneShotRam: ["OneShotRam","OneShotRam","OneShotRam","OneShotRamDemon"],
+				MarioPenguin: ["MarioPenguin","MarioPenguin","MarioPenguin","MarioPenguin","MarioPenguin","MarioMegPenguin"],
+				KirbyMic2: ["KirbyMic1","KirbyMic2","KirbyMic3"],
+				HKAdido: ["HKAdido","HKShaw"],
+				MPDogF: ["MPDogA","MPDogB","MPDogC","MPDogD","MPDogE","MPDogF","MPDogG"],
+				MPCatF: ["MPCatA","MPCatB","MPCatC","MPCatD","MPCatE","MPCatF","MPCatG"],
+				DeltaruneICanDoAnything: ["DeltaruneICanDoAnything","DeltaruneChaosChaos"],
+				LoZHello: ["LoZHello","LoZHey","LoZHey","LoZHey","LoZHey","LoZListen","LoZLook","LoZWatchOut"],
+				DESick: ["DESick","DEABomb","DEYourMother","DEMakeMe"],
+				BKGrunty1: ["BKGrunty1","BKGrunty2","BKGrunty3"],
 				BKJinjoGlaceWhistle: ["BKJinjoGlaceWhistle", "BKJinjoGlaceHelp"],
-				BubsyOhYeah: ["BubsyOhYeah", "BubsyHaHa", "BubsyILikeIt", "BubsyAlright"],
-				BubsyUhOh: ["BubsyUhOh", "BubsyAwNuts", "BubsyByeBye"],
-				BubsyWhatCouldPawsiblyGoWrong: ["BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyWhatCouldPawsiblyGoWrong", "BubsyDoYouBelieveInMiracles"],
-				BubsyCheckOutThatTime: ["BubsyCheckOutThatTime", "BubsyGreatScore"],
-				TGM_S: ["TGM_O", "TGM_J", "TGM_L", "TGM_Z", "TGM_S", "TGM_T", "TGM_I"],
+				BubsyOhYeah: ["BubsyOhYeah","BubsyHaHa","BubsyILikeIt","BubsyAlright"],
+				BubsyUhOh: ["BubsyUhOh","BubsyAwNuts","BubsyByeBye"],
+				BubsyWhatCouldPawsiblyGoWrong: ["BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyWhatCouldPawsiblyGoWrong","BubsyDoYouBelieveInMiracles"],
+				BubsyCheckOutThatTime: ["BubsyCheckOutThatTime","BubsyGreatScore"],
+				TGM_S: ["TGM_O","TGM_J","TGM_L","TGM_Z","TGM_S","TGM_T","TGM_I"],
 				// BubsyMyContract: ["BubsyMyContract","BubsyIsThereAVeterinarian","BubsyIsTheWritersStrikeOver","BubsyIAmATrainedPurrfessional","BubsyAPyramidScheme","BubsyWhoWroteThisStuff","BubsyAreYouStillPlayin"],
-				RotTHereCatch: ["RotTHereCatch", "RotTEatLead"],
+				RotTHereCatch: ["RotTHereCatch","RotTEatLead"],
+				CVJonathan: ["CVJonathan","CVCharlotte"],
+				Hatsworth1: ["Hatsworth1","Hatsworth2"],
+				PNCensor1: ["PNCensor1","PNCensor2","PNCensor3","PNCensor4","PNCensor5"],
+				PNBoyd1: ["PNBoyd1","PNBoyd2","PNBoyd3","PNBoyd4","PNBoyd5","PNBoyd6"],
+				PNGM1: ["PNGM1","PNGM2","PNGM3","PNGM4"],
+				REsubmit: ["REsubmit","REcancel","RE4AttacheEquip"],
+				ShenmueQTE: ["ShenmueQTE","ShenmueNotif"],
+				SimsCrowl: ["SimsCrowl","SimsAha","SimsMarmalade","SimsSpohoe","SimsSulSul","SimsTerremah"],
+				StrifeIDCheck: ["StrifeIDCheck","StrifeGoOn"],
+				StrifeBingo: ["StrifeBingo","StrifeGoodMove","StrifeOhJeez"],
+				TCSOAngie1: ["TCSOAngie1","TCSOAngie2","TCSOAngie3"],
+				TCSONaomi1: ["TCSONaomi1","TCSONaomi2"],
+				TenchuCmon: ["TenchuCmon","TenchuCoward","TenchuWhere"],
+				TES1Halt: ["TES1Halt","TES1StopThief"],
+				TES3Come: ["TES3Come","TES3Laugh","TES3Stupid"],
+				ThiefGarrett: ["ThiefGarrett","ThiefHmmm"],
+				ThiefGuard1: ["ThiefGuard1","ThiefGuard2","ThiefGuard3"],
+				TWEWYReady: ["TWEWYReady","TWEWYTryHarder"],
+				TWEWYFShop1: ["TWEWYFShop1","TWEWYFShop2","TWEWYFShop3","TWEWYFShop4","TWEWYFShop5","TWEWYFShop6","TWEWYFShop7"],
+				Wolf3DAchtung: ["Wolf3DAchtung","Wolf3DSS","Wolf3DLeben","Wolf3DSpion"],
+				WWYEAH: ["WWYEAH","WWWOW","WWGoodLuck"],
+				XB1Coo: ["XB1Coo","XB1Backslash","XB1FeelinIt","XB1SplitEnds"],
+				XB1Reyn1: ["XB1Reyn1","XB1Reyn2","XB1Reyn3","XB1Reyn4"],
+				XB2ASYADONE: ["XB2ASYADONE","XB2ASBEHAVE","XB2ASDONTFORGETME"],
+				XB2Phantasm1: ["XB2Phantasm1","XB2Phantasm2","XB2Phantasm3","XB2Phantasm4"],
+				LoZHWKing1: ["LoZHWKing1","LoZHWKing2","LoZHWKing3","LoZHWKing4","LoZHWKing5","LoZHWKing6","LoZHWKing7","LoZHWKing8"],
+				DTAIOuji1: ["DTAIOuji1","DTAIOuji2"],
 			}
 			let animatedBuzzers = ["SF3KenParry", "PlokCLEAR", "FECrit"];
 			let buzzerOptionsCurrentRow = 0;
@@ -134,7 +181,7 @@
 						buzzerId = buzzerOptionsFlat[Math.floor(Math.random() * (buzzerOptionsFlat.length - 1))];
 					}
 					socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
-					let buzzerSound = new Audio(buzzerId + ".wav");
+					let buzzerSound = new Audio(buzzerId + ".mp3");
 					if (animatedBuzzers.includes(buzzerId)) {
 						$("#buzzer").attr("src", buzzerId + ".gif");
 					}
@@ -254,7 +301,7 @@
 					socket.emit("pingServer", new Date().getTime());
 				}
 				else {
-					let denySelectSound = new Audio("SourceDenySelect.wav");
+					let denySelectSound = new Audio("SourceDenySelect.mp3");
 					denySelectSound.play();
 				}
 			}
@@ -273,7 +320,7 @@
 
 			$("#contestAnswer").find("img").mousedown(function () {
 				socket.emit("objectionToServer", userName);
-				let objectionSound = new Audio("AAObjection.wav");
+				let objectionSound = new Audio("AAObjection.mp3");
 				objectionSound.play();
 			});
 
@@ -287,7 +334,7 @@
 
 			window.secret = function () {
 				console.log("Rrree Neurgh!!! :D")
-				let reeeNeurgh = new Audio("LSRrreeNeurgh.wav");
+				let reeeNeurgh = new Audio("LSRrreeNeurgh.mp3");
 				reeeNeurgh.play();
 				$("#buzzer").attr("src", "LSRrreeNeurgh.png");
 				let buzzerId = "LSRrreeNeurgh"

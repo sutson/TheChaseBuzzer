@@ -5,7 +5,7 @@ function userInfoToClient(userInfo, isChargeMode, userChargeData) {
     re = new RegExp("\\W", "g");
     const userId = user.replaceAll(re, "_");
 
-    buzzerCache.set(userInfo[user].buzzerId, new Audio(`${userInfo[user].buzzerId}.wav`));
+    buzzerCache.set(userInfo[user].buzzerId, new Audio(`${userInfo[user].buzzerId}.mp3`));
 
     if ($("#userListPanel").find(`#${userId}`).length >= 1) {
       //update buzzer icon of existing user
@@ -93,7 +93,7 @@ function idkListToClient(idkList) {
 }
 
 function passToClient(teamName, soundOn) {
-  let passSound = new Audio("PikminDeath.wav");
+  let passSound = new Audio("PikminDeath.mp3");
   if (soundOn == true) {
     passSound.play();
   }
@@ -101,7 +101,7 @@ function passToClient(teamName, soundOn) {
   toggleBuzzer(false);
 }
 
-let objectionSound = new Audio("AAObjection.wav");
+let objectionSound = new Audio("AAObjection.mp3");
 function objectionToClient(userName) {
   // objectionSound.play();
   $("#objection").html("<img src='AAObjection.gif?" + Math.random() + "'><br>" + userName + " is objecting!<br>");
