@@ -281,7 +281,6 @@ app.get("/host", (req, res) => {
 
 // redirect host to host-charges if charge mode is enabled
 app.get("/host-charges", (req, res) => {
-  console.log(modeType)
   if (modeType != ModeType.CHARGES) { return res.redirect("/host" + req.url.replace("/host-charges", "")); }
   res.sendFile("pages/host.html", { root: __dirname });
 });
