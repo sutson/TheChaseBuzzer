@@ -215,13 +215,13 @@
 			socket.emit("getCurrentTeam");
 
 			socket.on("currentTeam", (currentTeamNumber, buzzInfo, userChargeData) => {
-				const isPlayerTurn = teamName == "Players";
+				const userIsOnPlayers = teamName == "Players";
 				if (currentTeamNumber == 0) {
-					toggleBuzzer(isPlayerTurn);
-					toggleIdk(isPlayerTurn);
+					toggleBuzzer(userIsOnPlayers);
+					toggleIdk(userIsOnPlayers);
 				} else {
-					toggleBuzzer(!isPlayerTurn);
-					toggleIdk(!isPlayerTurn);
+					toggleBuzzer(!userIsOnPlayers);
+					toggleIdk(!userIsOnPlayers);
 				}
 			});
 
@@ -241,6 +241,7 @@
 
 			socket.on("clearBuzzers", (currentTeam, modeType, userChargeData) => {
 				toggleBuzzer(currentTeam == teamName);
+				toggleIdk(currentTeam == teamName);
 				clearBuzzers(currentTeam, modeType, userChargeData);
 			});
 
@@ -256,12 +257,13 @@
 				}
 			});
 
-			socket.on("removeBuzzerLockouts", (userId) => {
+			socket.on("removeBuzzerLockouts", (id) => {
 				if (modeType == ModeType.NORMAL) { return; }
-
-				toggleBuzzer(true);
-				toggleIdk(true);
-				toggleUserOpacity(userId, false);
+				if (id == userId) {
+					toggleBuzzer(true);
+					toggleIdk(true);
+				}
+				toggleUserOpacity(id, false);
 			});
 
 			socket.on("buzzInfoToClient", (buzzInfo) => {

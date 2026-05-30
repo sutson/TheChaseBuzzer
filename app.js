@@ -128,7 +128,7 @@ io.on("connection", (socket) => {
 
       io.emit("idkListToClient", idkList);
       
-      if (idkList.length == teamSize - 1) {
+      if (modeType == ModeType.LOCKOUT && idkList.length == teamSize - 1) {
         if (userLocked && userId != userLocked) { io.emit("removeBuzzerLockouts", userLocked); }
       }
       else if (idkList.length >= teamSize) {
@@ -139,8 +139,7 @@ io.on("connection", (socket) => {
 
   socket.on("scoresToServer", (score) => {
     const currentTeamName = teamsList[currentTeamNumber];
-    const initTeamScore = teamsScore[currentTeamNumber];
-    const isTwoPointAnswer = initTeamScore == 0 && score == 2;
+    const isTwoPointAnswer = teamsScore[currentTeamNumber] == 0 && score == 2;
     teamsScore[currentTeamNumber] += score;
     
     let userToLock = "";
@@ -171,10 +170,10 @@ io.on("connection", (socket) => {
         const chargesModeCheck = modeType == ModeType.CHARGES && // add charges in CHARGES game mode for each user who didn't buzz who is below max charges
           userBuzzed?.userName != user && userEntry.teamName == currentTeamName && userEntry.charges < MAX_CHARGES;
         const lockoutModeCheck = modeType == ModeType.LOCKOUT && // add "charges" in LOCKOUT game mode for each user who has zero charges and didn't give a 2-point answer
-          !isTwoPointAnswer || (isTwoPointAnswer && userBuzzed?.userName != user) && userEntry.teamName == currentTeamName && userEntry.charges == 0;
-        
+          (!isTwoPointAnswer || (isTwoPointAnswer && userBuzzed?.userName != user) && userEntry.teamName == currentTeamName);
+
         if (chargesModeCheck || lockoutModeCheck) {
-          userEntry.charges++;
+          userEntry.charges = Math.min(userEntry.charges + 1, MAX_CHARGES); // clamp value
           io.emit("removeBuzzerLockouts", getUserId(user));
         }
       }
@@ -223,6 +222,8 @@ io.on("connection", (socket) => {
   socket.on("unregisterUsers", () => {
     userInfo = new Object();
     userChargeData = new Object();
+    buzzInfo = [];
+    idkList = [];
     userList = [];
     io.emit("userInfoToClient", userInfo, modeType, userChargeData);
     io.emit("reconnectUsers");
