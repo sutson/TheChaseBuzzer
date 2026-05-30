@@ -170,7 +170,7 @@ io.on("connection", (socket) => {
         const chargesModeCheck = modeType == ModeType.CHARGES && // add charges in CHARGES game mode for each user who didn't buzz who is below max charges
           userBuzzed?.userName != user && userEntry.teamName == currentTeamName && userEntry.charges < MAX_CHARGES;
         const lockoutModeCheck = modeType == ModeType.LOCKOUT && // add "charges" in LOCKOUT game mode for each user who has zero charges and didn't give a 2-point answer
-          (!isTwoPointAnswer || (isTwoPointAnswer && userBuzzed?.userName != user) && userEntry.teamName == currentTeamName);
+          userEntry.teamName == currentTeamName && (!isTwoPointAnswer || (isTwoPointAnswer && userBuzzed?.userName != user));
 
         if (chargesModeCheck || lockoutModeCheck) {
           userEntry.charges = Math.min(userEntry.charges + 1, MAX_CHARGES); // clamp value
