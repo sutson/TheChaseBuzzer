@@ -4,7 +4,7 @@
 <head>
 	<title>Thank the Builder for the trials that shape thee.</title>
 	<link rel="stylesheet" href="styleMain.css">
-	<script src="browserFunctions.js"></script>
+	<script src="../browserFunctions.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 
@@ -13,7 +13,11 @@
 			var socket = io({
 				transports: ["websocket"]
 			});
-			const isChargeMode = window.location.pathname.includes("charges"); // bool to determine if charge mode currently on
+			
+			let modeType = ModeType.NORMAL;
+			if (window.location.pathname.includes("charges")) { modeType = ModeType.CHARGES; } // bool to determine if charge mode currently on
+			else if (window.location.pathname.includes("lockout")) { modeType = ModeType.LOCKOUT; }; // bool to determine if lockout mode currently on
+
 			let buzzInTime;//for ping check
 			let queryString = new URL(location.href);
 			let userName = queryString.searchParams.get("user");
@@ -181,7 +185,7 @@
 						buzzerOptionsFlat = buzzerOptions.flat();
 						buzzerId = buzzerOptionsFlat[Math.floor(Math.random() * (buzzerOptionsFlat.length - 1))];
 					}
-					socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+					socket.emit("updateUserInfo", userName, teamName, buzzerId, modeType);
 					let buzzerSound = new Audio(buzzerId + ".mp3");
 					if (animatedBuzzers.includes(buzzerId)) {
 						$("#buzzer").attr("src", buzzerId + ".gif");
@@ -214,45 +218,49 @@
 				const isPlayerTurn = teamName == "Players";
 				if (currentTeamNumber == 0) {
 					toggleBuzzer(isPlayerTurn);
+					toggleIdk(isPlayerTurn);
 				} else {
 					toggleBuzzer(!isPlayerTurn);
+					toggleIdk(!isPlayerTurn);
 				}
 			});
 
-			socket.emit("updateUserInfo", userName, teamName, clientBuzzer, isChargeMode); //initial user registration
+			socket.emit("updateUserInfo", userName, teamName, clientBuzzer, modeType); //initial user registration
 
-			socket.on("userInfoToClient", (userInfo, isChargeModeEnabled, userChargeData) => {
-				userInfoToClient(userInfo, isChargeModeEnabled, userChargeData);
+			socket.on("userInfoToClient", (userInfo, modeType, userChargeData) => {
+				userInfoToClient(userInfo, modeType, userChargeData);
 			});
 
 			socket.on("reconnectUsers", () => {
 				location.reload();
 			});
 
-			socket.on("gameStateToClient", (currentTeam, currentScore, isChargeMode, userChargeData) => {
-				gameStateToClient(currentTeam, currentScore, isChargeMode, userChargeData);
+			socket.on("gameStateToClient", (currentTeam, currentScore, modeType, userChargeData) => {
+				gameStateToClient(currentTeam, currentScore, modeType, userChargeData);
 			});
 
-			socket.on("clearBuzzers", (currentTeam, isChargeMode, userChargeData) => {
+			socket.on("clearBuzzers", (currentTeam, modeType, userChargeData) => {
 				toggleBuzzer(currentTeam == teamName);
-				clearBuzzers(currentTeam, isChargeMode, userChargeData);
+				clearBuzzers(currentTeam, modeType, userChargeData);
 			});
 
 			socket.on("addBuzzerLockouts", (currentTeamNumber, lockedUser) => {
-				if (!isChargeMode) { return; }
+				if (modeType == ModeType.NORMAL) { return; }
 
-				if (lockedUser == userId) {
-					toggleBuzzer(false);
-					toggleIdk(false);
+				if (lockedUser) {
+					toggleUserOpacity(lockedUser, true);
+					if (lockedUser == userId) {
+						toggleBuzzer(false);
+						toggleIdk(modeType == ModeType.LOCKOUT); // don't disable idk button if in lockout mode
+					}
 				}
-				
-				toggleUserOpacity(lockedUser, true);
 			});
 
 			socket.on("removeBuzzerLockouts", (userId) => {
-				if (!isChargeMode) { return; }
+				if (modeType == ModeType.NORMAL) { return; }
 
 				toggleBuzzer(true);
+				toggleIdk(true);
 				toggleUserOpacity(userId, false);
 			});
 
@@ -293,11 +301,11 @@
 					if (specialBuzzers[clientBuzzer] != null) {
 						let buzzerId = specialBuzzers[clientBuzzer][Math.floor(Math.random() * (specialBuzzers[clientBuzzer].length))];
 						$("#buzzer").attr("src", buzzerId + ".png");
-						socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+						socket.emit("updateUserInfo", userName, teamName, buzzerId, modeType);
 					}
 					else if (animatedBuzzers.includes(clientBuzzer)) {
 						$("#buzzer").attr("src", clientBuzzer + ".gif");
-						socket.emit("updateUserInfo", userName, teamName, clientBuzzer, isChargeMode);
+						socket.emit("updateUserInfo", userName, teamName, clientBuzzer, modeType);
 					}
 					socket.emit("buzzerPressed", userName, buzzInTime);
 					socket.emit("pingServer", new Date().getTime());
@@ -309,12 +317,14 @@
 			}
 
 			$("#idkButton").mousedown(function () {
-				if (!buzzable) { return; }
-				socket.emit("idkButtonPressed", userName);
+				if (idkButtonClickable) {
+					idkButtonClickable = false;
+					socket.emit("idkButtonPressed", userName);
+				}
 			});
 
 			$(document).keydown(function (e) {
-				if (!buzzable) { return; }
+				if (!idkButtonClickable) { return; }
 				if (e.which == 73 || e.which == 68 || e.which == 75) {
 					socket.emit("idkButtonPressed", userName);
 				}
@@ -341,7 +351,7 @@
 				$("#buzzer").attr("src", "LSRrreeNeurgh.png");
 				let buzzerId = "LSRrreeNeurgh"
 				clientBuzzer = buzzerId;
-				socket.emit("updateUserInfo", userName, teamName, buzzerId, isChargeMode);
+				socket.emit("updateUserInfo", userName, teamName, buzzerId, modeType);
 			}
 			window.mute = function () {
 				buzzerSoundsOn = !buzzerSoundsOn;

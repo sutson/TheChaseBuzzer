@@ -13,13 +13,19 @@ const io = new Server(server, {
 });
 
 const userMap = new Map();
+const ModeType = Object.freeze({
+  NORMAL: "NORMAL",
+  CHARGES: "CHARGES",
+  LOCKOUT: "LOCKOUT"
+});
 
 let buzzInfo = [];
 let idkList = [];
 let userList = [];
 
-const MAX_CHARGES = 3;
-let isChargeModeEnabled = false;
+let MAX_CHARGES = 3;
+let modeType = ModeType.NORMAL;
+
 let userChargeData = new Object();
 
 let userInfo = new Object();//Each user has properties, and is stored as a property of userInfo
@@ -41,7 +47,7 @@ async function resetApp() {
   Object.keys(userInfo).forEach(x => delete userInfo[x]);
   Object.keys(userChargeData).forEach(x => delete userChargeData[x]);
   anyObjections = false;
-  isChargeModeEnabled = false;
+  modeType = modeType.NORMAL;
   teamsList.splice(0, teamsList.length, "Players", "Chasers");
   teamsScore.splice(0, teamsScore.length, 0, 0);
   currentTeamNumber = 0;
@@ -73,8 +79,7 @@ io.on("connection", (socket) => {
   });
 
   // initial info on connection
-  socket.emit("gameStateToClient", teamsList[currentTeamNumber], teamsScore[currentTeamNumber], isChargeModeEnabled, userChargeData);
-  socket.emit("getChargeModeState", isChargeModeEnabled);
+  socket.emit("gameStateToClient", teamsList[currentTeamNumber], teamsScore[currentTeamNumber], modeType, userChargeData);
 
   if (anyObjections == true) {
     socket.emit("objectionToClient", "????");
@@ -113,25 +118,42 @@ io.on("connection", (socket) => {
     if (!idkList.includes(newUserName) && userInfo[newUserName] != null && (userInfo[newUserName].teamName == teamsList[currentTeamNumber])) {
       idkList.push(newUserName);
       const currentTeamName = userInfo[newUserName].teamName;
-      const isUserLocked = getUserOnZeroCharges(teamsList[currentTeamNumber]); // determine if a user is locked out of buzzing
+      const userId = getUserId(newUserName);
+      const userLocked = getUserOnZeroCharges(teamsList[currentTeamNumber]); // determine if a user is locked out of buzzing
       
       let teamSize = Object.values(userInfo).filter((user) => user.teamName == currentTeamName).length;
-      if (isUserLocked) { teamSize--; } // reduce team size by 1 if user locked out, simulates "one less player" on the team
+      if (userLocked) {
+        if (modeType == ModeType.CHARGES) { teamSize--; } // reduce team size by 1 if user locked out, simulates "one less player" on the team
+      }
 
       io.emit("idkListToClient", idkList);
-
-      if (idkList.length >= teamSize) {
+      
+      if (idkList.length == teamSize - 1) {
+        if (userLocked && userId != userLocked) { io.emit("removeBuzzerLockouts", userLocked); }
+      }
+      else if (idkList.length >= teamSize) {
         io.emit("passToClient", teamsList[currentTeamNumber]);
       }
     }
   });
 
   socket.on("scoresToServer", (score) => {
-    const currentTeamName = teamsList[currentTeamNumber]
+    const currentTeamName = teamsList[currentTeamNumber];
+    const initTeamScore = teamsScore[currentTeamNumber];
+    const isTwoPointAnswer = initTeamScore == 0 && score == 2;
     teamsScore[currentTeamNumber] += score;
+    
+    let userToLock = "";
 
     const userBuzzed = buzzInfo.filter((user) => user.buzzOrder == 1)[0]
-    if (userBuzzed) { userChargeData[userBuzzed.userName].charges--; } // decrement charges by 1 for user who buzzed in
+    if (userBuzzed) {
+      if (modeType == ModeType.CHARGES) {
+        userChargeData[userBuzzed.userName].charges--; // decrement charges by 1 for user who buzzed in
+      }
+      else if (modeType == ModeType.LOCKOUT) {
+        if (isTwoPointAnswer && userChargeData[userBuzzed.userName].charges > 0) { userChargeData[userBuzzed.userName].charges--; } // remove "charge" if user gets +2
+      }
+    } 
 
     if (teamsScore[currentTeamNumber] >= 2) {
       teamsScore[currentTeamNumber] = 0;
@@ -142,22 +164,30 @@ io.on("connection", (socket) => {
     idkList = [];
 
     // add 1 charge and remove any buzzer lockout for every user on the team who did not buzz
-    for (const user in userChargeData) {
-      const userEntry = userChargeData[user];
-      if ((userBuzzed?.userName != user) && userEntry.teamName == currentTeamName && userEntry.charges < MAX_CHARGES) {
-        userEntry.charges++;
-        io.emit("removeBuzzerLockouts", getUserId(user));
+    if (modeType != ModeType.NORMAL) {
+      for (const user in userChargeData) {
+        const userEntry = userChargeData[user];
+        
+        const chargesModeCheck = modeType == ModeType.CHARGES && // add charges in CHARGES game mode for each user who didn't buzz who is below max charges
+          userBuzzed?.userName != user && userEntry.teamName == currentTeamName && userEntry.charges < MAX_CHARGES;
+        const lockoutModeCheck = modeType == ModeType.LOCKOUT && // add "charges" in LOCKOUT game mode for each user who has zero charges and didn't give a 2-point answer
+          !isTwoPointAnswer || (isTwoPointAnswer && userBuzzed?.userName != user) && userEntry.teamName == currentTeamName && userEntry.charges == 0;
+        
+        if (chargesModeCheck || lockoutModeCheck) {
+          userEntry.charges++;
+          io.emit("removeBuzzerLockouts", getUserId(user));
+        }
       }
+
+      userToLock = getUserOnZeroCharges(teamsList[currentTeamNumber]); // determine which user's buzzer should be locked, if any
     }
 
-    const userToLock = getUserOnZeroCharges(teamsList[currentTeamNumber]); // determine which user's buzzer should be locked, if any
-
-    io.emit("gameStateToClient", teamsList[currentTeamNumber], teamsScore[currentTeamNumber], isChargeModeEnabled, userChargeData);
-    io.emit("clearBuzzers", teamsList[currentTeamNumber], isChargeModeEnabled, userChargeData);
-    io.emit("addBuzzerLockouts", teamsList[currentTeamNumber], userToLock); // add lockout to user
+    io.emit("gameStateToClient", teamsList[currentTeamNumber], teamsScore[currentTeamNumber], modeType, userChargeData);
+    io.emit("clearBuzzers", teamsList[currentTeamNumber], modeType, userChargeData, userInfo);
+    if (userToLock) { io.emit("addBuzzerLockouts", teamsList[currentTeamNumber], userToLock); } // add lockout to user
   });
 
-  socket.on("updateUserInfo", (userName, teamName, buzzerId, isChargeMode) => {
+  socket.on("updateUserInfo", (userName, teamName, buzzerId, modeType) => {
     userInfo[userName] = {
       teamName: teamName,
       buzzerId: buzzerId
@@ -180,35 +210,35 @@ io.on("connection", (socket) => {
       userChargeData[userName] = { teamName: teamName, charges: MAX_CHARGES };
     }
 
-    io.emit("userInfoToClient", userInfo, isChargeMode, userChargeData);
-    if (!isChargeMode) { return; }
-    io.emit("addBuzzerLockouts", currentTeamNumber, getUserOnZeroCharges(teamsList[currentTeamNumber]));
+    io.emit("userInfoToClient", userInfo, modeType, userChargeData);
+    if (modeType != ModeType.NORMAL) { io.emit("addBuzzerLockouts", currentTeamNumber, getUserOnZeroCharges(teamsList[currentTeamNumber])); }
   });
 
   //used by the host when they refresh the page.
-  socket.on("refreshUserInfo", (isChargeMode) => {
-    io.emit("userInfoToClient", userInfo, isChargeMode, userChargeData);
-    if (!isChargeMode) { return; }
-    io.emit("addBuzzerLockouts", currentTeamNumber, getUserOnZeroCharges(teamsList[currentTeamNumber]));
+  socket.on("refreshUserInfo", (modeType) => {
+    io.emit("userInfoToClient", userInfo, modeType, userChargeData);
+    if (modeType == ModeType.CHARGES) { io.emit("addBuzzerLockouts", currentTeamNumber, getUserOnZeroCharges(teamsList[currentTeamNumber])); }
   });
 
   socket.on("unregisterUsers", () => {
     userInfo = new Object();
     userChargeData = new Object();
     userList = [];
-    io.emit("userInfoToClient", userInfo, isChargeModeEnabled, userChargeData);
+    io.emit("userInfoToClient", userInfo, modeType, userChargeData);
     io.emit("reconnectUsers");
     io.emit("getUserList", userList);
   });
 
-  socket.on("toggleChargeMode", (isChargeMode) => {
+  socket.on("toggleModeType", (mode) => {
     userInfo = new Object();
     userChargeData = new Object();
     userList = [];
     buzzInfo = [];
     idkList = [];
-    isChargeModeEnabled = isChargeMode;
-    io.emit("userInfoToClient", userInfo, isChargeModeEnabled, userChargeData);
+    modeType = mode;
+    MAX_CHARGES = modeType == ModeType.CHARGES ? 3 : 1;
+
+    io.emit("userInfoToClient", userInfo, modeType, userChargeData);
     io.emit("reconnectUsers");
     io.emit("getUserList", userList);
   });
@@ -244,32 +274,39 @@ app.get("/", (req, res) => {
 });
 
 app.get("/host", (req, res) => {
-  if (isChargeModeEnabled) {
-    return res.redirect("/host-charges" + req.url.replace("/host", ""));
-  }
+  if (modeType == ModeType.CHARGES) { return res.redirect("/host-charges" + req.url.replace("/host", "")); }
+  else if (modeType == ModeType.LOCKOUT) { return res.redirect("/host-lockout" + req.url.replace("/host", "")); }
   res.sendFile("pages/host.html", { root: __dirname });
 });
 
 // redirect host to host-charges if charge mode is enabled
 app.get("/host-charges", (req, res) => {
-  if (!isChargeModeEnabled) {
-    return res.redirect("/host" + req.url.replace("/host-charges", ""));
-  }
+  console.log(modeType)
+  if (modeType != ModeType.CHARGES) { return res.redirect("/host" + req.url.replace("/host-charges", "")); }
+  res.sendFile("pages/host.html", { root: __dirname });
+});
+
+// redirect host to host-lockout if lockout mode is enabled
+app.get("/host-lockout", (req, res) => {
+  if (modeType != ModeType.LOCKOUT) { return res.redirect("/host" + req.url.replace("/host-lockout", "")); }
   res.sendFile("pages/host.html", { root: __dirname });
 });
 
 app.get("/play", (req, res) => {
-  if (isChargeModeEnabled) {
-    return res.redirect("/play-charges" + req.url.replace("/play", ""));
-  }
+  if (modeType == ModeType.CHARGES) { return res.redirect("/play-charges" + req.url.replace("/play", "")); }
+  else if (modeType == ModeType.LOCKOUT) { return res.redirect("/play-lockout" + req.url.replace("/play", "")); }
   res.sendFile("pages/play.html", { root: __dirname });
 });
 
 // redirect users to play-charges if charge mode is enabled
 app.get("/play-charges", (req, res) => {
-  if (!isChargeModeEnabled) {
-    return res.redirect("/play" + req.url.replace("/play-charges", ""));
-  }
+    if (modeType != ModeType.CHARGES) { return res.redirect("/play" + req.url.replace("/play-charges", "")); }
+  res.sendFile("pages/play.html", { root: __dirname });
+});
+
+// redirect users to play-lockout if charge mode is enabled
+app.get("/play-lockout", (req, res) => {
+    if (modeType != ModeType.LOCKOUT) { return res.redirect("/play" + req.url.replace("/play-lockout", "")); }
   res.sendFile("pages/play.html", { root: __dirname });
 });
 

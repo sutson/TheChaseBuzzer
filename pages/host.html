@@ -3,7 +3,7 @@
 	<head>
 		<title>Keep cursor inside the window at all times.</title>
 		<link rel="stylesheet" href="styleMain.css">
-		<script src="browserFunctions.js"></script>
+		<script src="../browserFunctions.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
@@ -12,24 +12,24 @@
 					transports: ["websocket"]
 				});
 
-				let isChargeModeEnabled = false; // bool to determine if charge mode currently on
-				socket.on("getChargeModeState", (isChargeMode) => {
-					isChargeModeEnabled = isChargeMode;
-					socket.emit("refreshUserInfo", isChargeModeEnabled);
+				let modeType = ModeType.NORMAL;
+				if (window.location.pathname.includes("charges")) { modeType = ModeType.CHARGES; } // bool to determine if charge mode currently on
+				else if (window.location.pathname.includes("lockout")) { modeType = ModeType.LOCKOUT; }; // bool to determine if lockout mode currently on
+				
+				socket.emit("refreshUserInfo", modeType);
+				$("#toggleChargeMode").text(`${modeType == ModeType.CHARGES ? "Disable" : "Enable"} Charge Mode`);
+				$("#toggleBuzzerLockout").text(`${modeType == ModeType.LOCKOUT ? "Disable" : "Enable"} Buzzer Lockouts`);
 
-					$("#toggleChargeMode").text(`${isChargeModeEnabled ? "Disable" : "Enable"} Charge Mode`);
+				socket.on("userInfoToClient", (userInfo, mode, userChargeData) => {
+					userInfoToClient(userInfo, mode, userChargeData);
 				});
 
-				socket.on("userInfoToClient", (userInfo, isChargeMode, userChargeData) => {
-					userInfoToClient(userInfo, isChargeMode, userChargeData);
+				socket.on("gameStateToClient", (currentTeam, currentScore, mode, userChargeData) => {
+					gameStateToClient(currentTeam, currentScore, mode, userChargeData);
 				});
 
-				socket.on("gameStateToClient", (currentTeam, currentScore, isChargeMode, userChargeData) => {
-					gameStateToClient(currentTeam, currentScore, isChargeMode, userChargeData);
-				});
-
-				socket.on("clearBuzzers", (currentTeam, isChargeMode, userChargeData) => {
-					clearBuzzers(currentTeam, isChargeMode, userChargeData);
+				socket.on("clearBuzzers", (currentTeam, mode, userChargeData) => {
+					clearBuzzers(currentTeam, mode, userChargeData);
 				});
 
 				socket.on("buzzInfoToClient", (buzzInfo) => {
@@ -66,10 +66,15 @@
 				});
 
 				$("#toggleChargeMode").click(function() {
-					socket.emit("toggleChargeMode", !isChargeModeEnabled);
+					socket.emit("toggleModeType", modeType != ModeType.CHARGES ? ModeType.CHARGES : ModeType.NORMAL);
 					location.reload();
 				});
-				
+
+				$("#toggleBuzzerLockout").click(function() {
+					socket.emit("toggleModeType", modeType != ModeType.LOCKOUT ? ModeType.LOCKOUT : ModeType.NORMAL);
+					location.reload();
+				});
+
 				socket.on("objectionToClient", (userName) => {
 					objectionToClient(userName);
 					$("#objection").append("<button id='clearObjection' type='button' style='height: 30px;'>Clear Objections</button>");
@@ -87,7 +92,7 @@
 				});
 
 				socket.on("addBuzzerLockouts", (currentTeamNumber, lockedUser) => {
-					if (!isChargeModeEnabled) { return; }
+					if (modeType == ModeType.NORMAL) { return; }
 					if (lockedUser) { toggleUserOpacity(lockedUser, true); }
 				});
 
@@ -120,7 +125,7 @@
 			<br>
 			<br>
 			<br>
-			<!-- <button id="lockoutBuzzers" type="button" style="height: 30px;"></button> -->
+			<button id="toggleBuzzerLockout" type="button" style="height: 30px;"></button>
 			<button id="toggleChargeMode" type="button" style="height: 30px;"></button>
 			<br>
 			<br>

@@ -1,6 +1,11 @@
 var buzzerCache = new Map();
+window.ModeType = Object.freeze({
+  NORMAL: "NORMAL",
+  CHARGES: "CHARGES",
+  LOCKOUT: "LOCKOUT"
+});
 
-function userInfoToClient(userInfo, isChargeMode, userChargeData) {
+function userInfoToClient(userInfo, modeType, userChargeData) {
   for (const user in userInfo) {
     re = new RegExp("\\W", "g");
     const userId = user.replaceAll(re, "_");
@@ -15,7 +20,10 @@ function userInfoToClient(userInfo, isChargeMode, userChargeData) {
     else {
       //new user
       const buzzerIcon = `<img src=${userInfo[user].buzzerId}.png data-buzzerId=${userInfo[user].buzzerId} class=userListBuzzerSelections>`
-      const userText = `${user}${(isChargeMode ? `<var id=chargeBlocks>${getChargeBlocks(userChargeData[user].charges)}</var>` : "")}` // user name with charges, if applicable
+      // user name with charges, if applicable
+      const userText = `${user}${
+        (modeType == window.ModeType.CHARGES ? `<var id=chargeBlocks style="margin-left: 5px">${getChargeBlocks(userChargeData[user].charges)}</var>` : "")
+      }`
       $(`#${userInfo[user].teamName}List`)
         .find("ul")
         .append(
@@ -36,21 +44,10 @@ function getChargeBlocks(charges) {
   return blockHtml;
 }
 
-function gameStateToClient(currentTeam, currentScore, isChargeMode, userChargeData) {
+function gameStateToClient(currentTeam, currentScore, _, _) {
   $("#PlayersList").css("opacity", 0.5);
   $("#ChasersList").css("opacity", 0.5);
   $(`#${currentTeam}List`).css("opacity", 1);
-
-  // TODO: do i need this?
-  // if (isChargeMode && currentTeam == "Players") {
-  //   for (const user in userChargeData) {
-  //     const userEntry = userChargeData[user];
-  //     if (userEntry.charges == 0) {
-  //       toggleBuzzer(false);
-  //       toggleUserOpacity(user.replaceAll(" ", "_"), true);
-  //     }
-  //   }
-  // }
 
   $("#currentTeam").html(`${currentTeam} Turn`);
   $("#currentScore").html(currentScore);
