@@ -118,7 +118,6 @@ io.on("connection", (socket) => {
     if (!idkList.includes(newUserName) && userInfo[newUserName] != null && (userInfo[newUserName].teamName == teamsList[currentTeamNumber])) {
       idkList.push(newUserName);
       const currentTeamName = userInfo[newUserName].teamName;
-      const userId = getUserId(newUserName);
       const userLocked = getUserOnZeroCharges(teamsList[currentTeamNumber]); // determine if a user is locked out of buzzing
       
       let teamSize = Object.values(userInfo).filter((user) => user.teamName == currentTeamName).length;
@@ -128,8 +127,10 @@ io.on("connection", (socket) => {
 
       io.emit("idkListToClient", idkList);
       
-      if (modeType == ModeType.LOCKOUT && idkList.length == teamSize - 1) {
-        if (userLocked && userId != userLocked) { io.emit("removeBuzzerLockouts", userLocked); }
+      // if lockout mode and a user is locked, check whether to remove lockouts when all but one player on the team has passed
+      if (modeType == ModeType.LOCKOUT && userLocked && idkList.length == teamSize - 1) {
+        const hasLockedUserPassed = idkList.includes(userLocked.replace("_", " ")); // need to convert from "user_name" to "user name"
+        if (!hasLockedUserPassed) { io.emit("removeBuzzerLockouts", userLocked); }
       }
       else if (idkList.length >= teamSize) {
         io.emit("passToClient", teamsList[currentTeamNumber]);
