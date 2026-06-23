@@ -104,14 +104,19 @@ io.on("connection", (socket) => {
       }
     });
 
+    const userLocked = getUserOnZeroCharges(teamsList[currentTeamNumber]);
+    const isLockedUser = userLocked == newUserName.replace(" ", "_");
+    const hasLockedUserBuzzed = buzzInfo.some((user) => user.buzzOrder == -1);
+    const buzzNumber = buzzInfo.length + (hasLockedUserBuzzed ? 0 : 1);
+
     buzzInfo.push({
       userName: newUserName,
       timeStamp: newTimeStamp,
       lateTime: newTimeStamp - firstBuzzTimeStamp,
-      buzzOrder: buzzInfo.length + 1
+      buzzOrder: isLockedUser ? -1 : buzzNumber
     });
 
-    io.emit("buzzInfoToClient", buzzInfo);
+    io.emit("buzzInfoToClient", buzzInfo, false);
   });
 
   socket.on("idkButtonPressed", (newUserName) => {
@@ -129,8 +134,12 @@ io.on("connection", (socket) => {
       
       // if lockout mode and a user is locked, check whether to remove lockouts when all but one player on the team has passed
       if (modeType == ModeType.LOCKOUT && userLocked && idkList.length == teamSize - 1) {
-        const hasLockedUserPassed = idkList.includes(userLocked.replace("_", " ")); // need to convert from "user_name" to "user name"
-        if (!hasLockedUserPassed) { io.emit("removeBuzzerLockouts", userLocked); }
+        const lockedUserName = userLocked.replace("_", " ")
+        const hasLockedUserPassed = idkList.includes(lockedUserName); // need to convert from "user_name" to "user name"
+        if (!hasLockedUserPassed) {
+          if (buzzInfo.length > 0) { io.emit("buzzInfoToClient", buzzInfo, true); }
+          io.emit("removeBuzzerLockouts", userLocked);
+        }
       }
       else if (idkList.length >= teamSize) {
         io.emit("passToClient", teamsList[currentTeamNumber]);
@@ -145,7 +154,9 @@ io.on("connection", (socket) => {
     
     let userToLock = "";
 
-    const userBuzzed = buzzInfo.filter((user) => user.buzzOrder == 1)[0]
+    let userBuzzed = buzzInfo.filter((user) => user.buzzOrder == 1)[0];
+    if (!userBuzzed) { userBuzzed = buzzInfo.filter((user) => user.buzzOrder == -1)[0]; }
+    
     if (userBuzzed) {
       if (modeType == ModeType.CHARGES) {
         userChargeData[userBuzzed.userName].charges--; // decrement charges by 1 for user who buzzed in
@@ -153,7 +164,7 @@ io.on("connection", (socket) => {
       else if (modeType == ModeType.LOCKOUT) {
         if (isTwoPointAnswer && userChargeData[userBuzzed.userName].charges > 0) { userChargeData[userBuzzed.userName].charges--; } // remove "charge" if user gets +2
       }
-    } 
+    }
 
     if (teamsScore[currentTeamNumber] >= 2) {
       teamsScore[currentTeamNumber] = 0;

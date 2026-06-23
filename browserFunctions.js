@@ -27,7 +27,7 @@ function userInfoToClient(userInfo, modeType, userChargeData) {
       $(`#${userInfo[user].teamName}List`)
         .find("ul")
         .append(
-          `<li id=${userId}>${buzzerIcon}${userText}<var id=${userId}></var></li>`
+          `<li id=${userId}>${buzzerIcon}${userText}<var style="font-style: normal" id=${userId}></var></li>`
         );
     }
   }
@@ -64,21 +64,33 @@ function clearBuzzers(_, isChargeMode, userChargeData) {
   }
 }
 
-function buzzInfoToClient(buzzInfo, soundOn) {
+function buzzInfoToClient(buzzInfo, allowLockedUserBuzz, soundOn) {
   //play sound for first buzz in
   if ($("#firstBuzz").html() == "") {
-    $("#firstBuzz").html(buzzInfo[0].userName);
-    const userId = getUserId(buzzInfo[0].userName);
-    let buzzerId = $("#userListPanel").find("#" + userId).find("img").attr("data-buzzerId");
-    let buzzerSound = buzzerCache.get(buzzerId);
-    if (soundOn == true) {
-      buzzerSound.play();
+    let firstBuzz = buzzInfo[0];
+    if (firstBuzz.buzzOrder == -1) { // if first buzz is locked user
+      if (!allowLockedUserBuzz) { firstBuzz = buzzInfo[1]; }
+    }
+    if (firstBuzz) {
+      $("#firstBuzz").html(firstBuzz.userName);
+      playBuzzerSound(firstBuzz, soundOn);
     }
   }
 
   for (let i = 0; i < buzzInfo.length; i++) {
     const userId = getUserId(buzzInfo[i].userName);
-    $("#userListPanel").find("#" + userId).find("var").last().html(" [" + buzzInfo[i].buzzOrder + "]");
+    const isLockedUserBuzz = buzzInfo[i].buzzOrder == -1;
+    const number = isLockedUserBuzz ? "✋" : buzzInfo[i].buzzOrder;
+    $("#userListPanel").find(`#${userId}`).find("var").last().html(` [${number}]`);
+  }
+}
+
+function playBuzzerSound(buzzedUser, soundOn) {
+  const userId = getUserId(buzzedUser.userName);
+  let buzzerId = $("#userListPanel").find(`#${userId}`).find("img").attr("data-buzzerId");
+  let buzzerSound = buzzerCache.get(buzzerId);
+  if (soundOn == true) {
+    buzzerSound.play();
   }
 }
 

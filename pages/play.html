@@ -247,27 +247,16 @@
 
 			socket.on("addBuzzerLockouts", (currentTeamNumber, lockedUser) => {
 				if (modeType == ModeType.NORMAL) { return; }
-
-				if (lockedUser) {
-					toggleUserOpacity(lockedUser, true);
-					if (lockedUser == userId) {
-						toggleBuzzer(false);
-						toggleIdk(modeType == ModeType.LOCKOUT); // don't disable idk button if in lockout mode
-					}
-				}
+				if (lockedUser) { toggleUserOpacity(lockedUser, true); }
 			});
 
 			socket.on("removeBuzzerLockouts", (id) => {
 				if (modeType == ModeType.NORMAL) { return; }
-				if (id == userId) {
-					toggleBuzzer(true);
-					toggleIdk(true);
-				}
 				toggleUserOpacity(id, false);
 			});
 
-			socket.on("buzzInfoToClient", (buzzInfo) => {
-				buzzInfoToClient(buzzInfo, buzzerSoundsOn);
+			socket.on("buzzInfoToClient", (buzzInfo, allowLockedUserBuzz) => {
+				buzzInfoToClient(buzzInfo, allowLockedUserBuzz, buzzerSoundsOn);
 			});
 
 			socket.on("pingClient", (timeStamp) => {

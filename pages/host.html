@@ -32,8 +32,8 @@
 					clearBuzzers(currentTeam, mode, userChargeData);
 				});
 
-				socket.on("buzzInfoToClient", (buzzInfo) => {
-					buzzInfoToClient(buzzInfo, true);
+				socket.on("buzzInfoToClient", (buzzInfo, allowLockedUserBuzz) => {
+					buzzInfoToClient(buzzInfo, allowLockedUserBuzz, true);
 				});
 
 				socket.on("idkListToClient", (idkList) => {
